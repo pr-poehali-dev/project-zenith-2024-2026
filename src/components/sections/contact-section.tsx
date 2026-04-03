@@ -1,177 +1,188 @@
-import { Mail, MapPin } from "lucide-react"
+import { useState } from "react"
 import { useReveal } from "@/hooks/use-reveal"
-import { useState, type FormEvent } from "react"
 import { MagneticButton } from "@/components/magnetic-button"
+import Icon from "@/components/ui/icon"
 
-export function ContactSection() {
-  const { ref, isVisible } = useReveal(0.3)
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
+const badges = [
+  { name: "Знаток спутников", icon: "Satellite", earned: true, date: "12 мар 2025", color: "text-blue-400" },
+  { name: "Историк Гагарина", icon: "Rocket", earned: true, date: "1 апр 2025", color: "text-yellow-400" },
+  { name: "Первопроходец", icon: "Flag", earned: true, date: "10 фев 2025", color: "text-green-400" },
+  { name: "Наблюдатель МКС", icon: "Eye", earned: false, condition: "Подпишись на МКС", color: "text-foreground/30" },
+  { name: "Навигатор", icon: "Compass", earned: false, condition: "Изучи 20 событий", color: "text-foreground/30" },
+  { name: "Исследователь Луны", icon: "Moon", earned: false, condition: "Открой Луна-25", color: "text-foreground/30" },
+  { name: "Лётчик-испытатель", icon: "Plane", earned: false, condition: "Пройди карьерный тест", color: "text-foreground/30" },
+  { name: "Легенда орбиты", icon: "Crown", earned: false, condition: "Достичь уровня Капитан", color: "text-foreground/30" },
+  { name: "Звёздный наставник", icon: "Star", earned: false, condition: "Привлеки 3 друзей", color: "text-foreground/30" },
+  { name: "Охотник за кометами", icon: "Zap", earned: false, condition: "7 дней подряд", color: "text-foreground/30" },
+  { name: "Орбитальный механик", icon: "Settings", earned: false, condition: "Изучи 5 профессий", color: "text-foreground/30" },
+  { name: "Сверхновая", icon: "Sparkles", earned: false, condition: "2000+ очков", color: "text-foreground/30" },
+]
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+const planets = [
+  { name: "Меркурий", topic: "Физика", done: true, size: "h-4 w-4" },
+  { name: "Венера", topic: "Атмосфера", done: true, size: "h-5 w-5" },
+  { name: "Земля", topic: "Орбита", done: true, size: "h-6 w-6" },
+  { name: "Марс", topic: "Марс", done: false, size: "h-5 w-5" },
+  { name: "Юпитер", topic: "Газовые гиганты", done: false, size: "h-8 w-8" },
+  { name: "Сатурн", topic: "Кольца", done: false, size: "h-7 w-7" },
+  { name: "Уран", topic: "Лёд", done: false, size: "h-5 w-5" },
+  { name: "Нептун", topic: "Дальний космос", done: false, size: "h-5 w-5" },
+]
 
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.message) {
-      return
-    }
+export function AchievementsSection() {
+  const { ref, isVisible } = useReveal(0.2)
+  const [npsValue, setNpsValue] = useState<number | null>(null)
+  const [refCopied, setRefCopied] = useState(false)
 
-    setIsSubmitting(true)
-
-    // Simulate form submission (replace with actual API call later)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    setIsSubmitting(false)
-    setSubmitSuccess(true)
-    setFormData({ name: "", email: "", message: "" })
-
-    // Reset success message after 5 seconds
-    setTimeout(() => setSubmitSuccess(false), 5000)
+  const copyRef = () => {
+    navigator.clipboard.writeText("https://kosmotrack.ru/invite/alex42")
+    setRefCopied(true)
+    setTimeout(() => setRefCopied(false), 2000)
   }
+
+  const earnedBadges = badges.filter((b) => b.earned).length
 
   return (
     <section
       ref={ref}
-      className="flex h-screen w-screen shrink-0 snap-start items-center px-4 pt-20 md:px-12 md:pt-0 lg:px-16"
+      className="flex h-screen w-screen shrink-0 snap-start items-start px-6 pt-20 pb-6 md:px-12 lg:px-16 overflow-y-auto"
+      style={{ scrollbarWidth: "none" }}
     >
       <div className="mx-auto w-full max-w-7xl">
-        <div className="grid gap-8 md:grid-cols-[1.2fr_1fr] md:gap-16 lg:gap-24">
-          <div className="flex flex-col justify-center">
-            <div
-              className={`mb-6 transition-all duration-700 md:mb-12 ${
-                isVisible ? "translate-x-0 opacity-100" : "-translate-x-12 opacity-0"
-              }`}
-            >
-              <h2 className="mb-2 font-sans text-4xl font-light leading-[1.05] tracking-tight text-foreground md:mb-3 md:text-7xl lg:text-8xl">
-                Давайте
-                <br />
-                поговорим
-              </h2>
-              <p className="font-mono text-xs text-foreground/60 md:text-base">/ Свяжитесь с нами</p>
+        <div className={`mb-5 transition-all duration-700 ${isVisible ? "translate-x-0 opacity-100" : "-translate-x-12 opacity-0"}`}>
+          <h2 className="mb-1 font-sans text-4xl font-light tracking-tight text-foreground md:text-6xl">
+            Достижения
+          </h2>
+          <p className="font-mono text-sm text-foreground/60">/ Геймификация и награды</p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {/* Левая колонка: профиль + прогресс */}
+          <div className="space-y-4">
+            {/* Аватар и прогресс */}
+            <div className={`rounded-xl border border-foreground/10 bg-foreground/5 p-4 backdrop-blur-sm transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+              <div className="mb-3 flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-foreground/10 border border-foreground/20 text-xl">
+                  🧑‍🚀
+                </div>
+                <div>
+                  <div className="font-sans text-sm font-medium text-foreground">Конструктор</div>
+                  <div className="font-mono text-xs text-blue-400">2 840 очков</div>
+                </div>
+              </div>
+              <div className="mb-1 flex justify-between font-mono text-xs text-foreground/40">
+                <span>До «Капитана корабля»</span>
+                <span>45%</span>
+              </div>
+              <div className="mb-3 h-1.5 w-full rounded-full bg-foreground/10">
+                <div className="h-1.5 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000" style={{ width: isVisible ? "45%" : "0%" }} />
+              </div>
+              {/* Солнечная система */}
+              <div className="flex items-center gap-2 overflow-hidden">
+                {planets.map((p, i) => (
+                  <div
+                    key={i}
+                    title={`${p.topic} ${p.done ? "✓" : ""}`}
+                    className={`rounded-full shrink-0 transition-all ${p.size} ${
+                      p.done
+                        ? "bg-blue-500 shadow-[0_0_8px_2px_rgba(59,130,246,0.4)]"
+                        : "bg-foreground/15 border border-foreground/10"
+                    }`}
+                  />
+                ))}
+              </div>
+              <div className="mt-1 font-mono text-[9px] text-foreground/30">Планеты = темы курса</div>
             </div>
 
-            <div className="space-y-4 md:space-y-8">
-              <a
-                href="mailto:info@flowrise.dev"
-                className={`group block transition-all duration-700 ${
-                  isVisible ? "translate-x-0 opacity-100" : "-translate-x-16 opacity-0"
-                }`}
-                style={{ transitionDelay: "200ms" }}
-              >
-                <div className="mb-1 flex items-center gap-2">
-                  <Mail className="h-3 w-3 text-foreground/60" />
-                  <span className="font-mono text-xs text-foreground/60">Email</span>
-                </div>
-                <p className="text-base text-foreground transition-colors group-hover:text-foreground/70 md:text-2xl">
-                  info@flowrise.dev
-                </p>
-              </a>
-
-              <div
-                className={`transition-all duration-700 ${
-                  isVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
-                }`}
-                style={{ transitionDelay: "350ms" }}
-              >
-                <div className="mb-1 flex items-center gap-2">
-                  <MapPin className="h-3 w-3 text-foreground/60" />
-                  <span className="font-mono text-xs text-foreground/60">Локация</span>
-                </div>
-                <p className="text-base text-foreground md:text-2xl">Москва, Россия</p>
-              </div>
-
-              <div
-                className={`flex gap-2 pt-2 transition-all duration-700 md:pt-4 ${
-                  isVisible ? "translate-x-0 opacity-100" : "-translate-x-8 opacity-0"
-                }`}
-                style={{ transitionDelay: "500ms" }}
-              >
-                {["Telegram", "VK", "LinkedIn", "GitHub"].map((social) => (
-                  <a
-                    key={social}
-                    href="#"
-                    className="border-b border-transparent font-mono text-xs text-foreground/60 transition-all hover:border-foreground/60 hover:text-foreground/90"
-                  >
-                    {social}
-                  </a>
+            {/* Статистика */}
+            <div className={`rounded-xl border border-foreground/10 bg-foreground/5 p-4 backdrop-blur-sm transition-all duration-700 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+              <div className="mb-3 font-mono text-xs text-foreground/50 uppercase tracking-widest">/ Статистика</div>
+              <div className="space-y-2">
+                {[
+                  { label: "Бейджей у вас", value: `${earnedBadges} — больше 70%`, icon: "Award" },
+                  { label: "Достигли Конструктора", value: "25% активных", icon: "Users" },
+                  { label: "Ежедневные задания", value: "82% выполнения", icon: "CheckSquare" },
+                ].map((s, i) => (
+                  <div key={i} className="flex items-center justify-between border-b border-foreground/10 py-1.5">
+                    <div className="flex items-center gap-2">
+                      <Icon name={s.icon as "Award"} fallback="Circle" size={12} className="text-foreground/40" />
+                      <span className="font-sans text-xs text-foreground/70">{s.label}</span>
+                    </div>
+                    <span className="font-mono text-xs text-foreground">{s.value}</span>
+                  </div>
                 ))}
               </div>
             </div>
+
+            {/* Сарафанный космос */}
+            <div className={`rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 backdrop-blur-sm transition-all duration-700 delay-200 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+              <div className="mb-2 flex items-center gap-2">
+                <Icon name="Share2" size={12} className="text-blue-400" />
+                <span className="font-mono text-xs text-blue-300">Сарафанный космос</span>
+              </div>
+              <p className="mb-3 font-sans text-xs text-foreground/60">Пригласи 3 друзей → +50 очков за каждого</p>
+              <MagneticButton variant="primary" onClick={copyRef}>
+                {refCopied ? "Ссылка скопирована!" : "Скопировать реф-ссылку"}
+              </MagneticButton>
+            </div>
           </div>
 
-          {/* Right side - Minimal form */}
-          <div className="flex flex-col justify-center">
-            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-              <div
-                className={`transition-all duration-700 ${
-                  isVisible ? "translate-x-0 opacity-100" : "translate-x-16 opacity-0"
-                }`}
-                style={{ transitionDelay: "200ms" }}
-              >
-                <label className="mb-1 block font-mono text-xs text-foreground/60 md:mb-2">Имя</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="w-full border-b border-foreground/30 bg-transparent py-1.5 text-sm text-foreground placeholder:text-foreground/40 focus:border-foreground/50 focus:outline-none md:py-2 md:text-base"
-                  placeholder="Ваше имя"
-                />
-              </div>
-
-              <div
-                className={`transition-all duration-700 ${
-                  isVisible ? "translate-x-0 opacity-100" : "translate-x-16 opacity-0"
-                }`}
-                style={{ transitionDelay: "350ms" }}
-              >
-                <label className="mb-1 block font-mono text-xs text-foreground/60 md:mb-2">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  className="w-full border-b border-foreground/30 bg-transparent py-1.5 text-sm text-foreground placeholder:text-foreground/40 focus:border-foreground/50 focus:outline-none md:py-2 md:text-base"
-                  placeholder="your@email.com"
-                />
-              </div>
-
-              <div
-                className={`transition-all duration-700 ${
-                  isVisible ? "translate-x-0 opacity-100" : "translate-x-16 opacity-0"
-                }`}
-                style={{ transitionDelay: "500ms" }}
-              >
-                <label className="mb-1 block font-mono text-xs text-foreground/60 md:mb-2">Сообщение</label>
-                <textarea
-                  rows={3}
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  required
-                  className="w-full border-b border-foreground/30 bg-transparent py-1.5 text-sm text-foreground placeholder:text-foreground/40 focus:border-foreground/50 focus:outline-none md:py-2 md:text-base"
-                  placeholder="Расскажите о вашем проекте..."
-                />
-              </div>
-
-              <div
-                className={`transition-all duration-700 ${
-                  isVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
-                }`}
-                style={{ transitionDelay: "650ms" }}
-              >
-                <MagneticButton
-                  variant="primary"
-                  size="lg"
-                  className="w-full disabled:opacity-50"
+          {/* Бейджи — сетка 3×4 */}
+          <div className={`md:col-span-1 lg:col-span-2 transition-all duration-700 delay-100 ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"}`}>
+            <div className="mb-3 flex items-center justify-between">
+              <div className="font-mono text-xs text-foreground/50 uppercase tracking-widest">/ Бейджи</div>
+              <span className="font-mono text-xs text-foreground/40">{earnedBadges} из {badges.length}</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 md:grid-cols-4">
+              {badges.map((b, i) => (
+                <div
+                  key={i}
+                  className={`group flex flex-col items-center rounded-xl border p-3 transition-all ${
+                    b.earned
+                      ? "border-foreground/20 bg-foreground/5 hover:border-foreground/30"
+                      : "border-foreground/5 bg-foreground/2 opacity-50"
+                  }`}
+                  title={b.earned ? `Получено ${b.date}` : b.condition}
                 >
-                  {isSubmitting ? "Отправка..." : "Отправить"}
-                </MagneticButton>
-                {submitSuccess && (
-                  <p className="mt-3 text-center font-mono text-sm text-foreground/80">Сообщение отправлено!</p>
-                )}
+                  <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-full ${b.earned ? "bg-foreground/10" : "bg-foreground/5"}`}>
+                    <Icon name={b.icon as "Star"} fallback="Circle" size={18} className={b.color} />
+                  </div>
+                  <div className="text-center font-sans text-[10px] leading-tight text-foreground/80">{b.name}</div>
+                  {b.earned ? (
+                    <div className="mt-1 font-mono text-[9px] text-foreground/30">{b.date}</div>
+                  ) : (
+                    <div className="mt-1 font-mono text-[9px] text-foreground/25 text-center">{b.condition}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* NPS */}
+            <div className="mt-4 rounded-xl border border-foreground/10 bg-foreground/5 p-4 backdrop-blur-sm">
+              <p className="mb-3 font-sans text-sm text-foreground/80">Насколько платформа вам помогла? (0 — совсем нет, 10 — очень)</p>
+              <div className="flex gap-1.5 flex-wrap">
+                {Array.from({ length: 11 }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setNpsValue(i)}
+                    className={`h-8 min-w-[2rem] flex-1 rounded-lg border font-mono text-xs transition-all ${
+                      npsValue === i
+                        ? "border-blue-500 bg-blue-500/30 text-blue-300"
+                        : i >= 9
+                        ? "border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                        : "border-foreground/10 text-foreground/40 hover:border-foreground/20"
+                    }`}
+                  >
+                    {i}
+                  </button>
+                ))}
               </div>
-            </form>
+              {npsValue !== null && (
+                <p className="mt-2 font-mono text-xs text-foreground/50">
+                  {npsValue >= 9 ? "Спасибо! Вы — наш амбассадор 🚀" : npsValue >= 7 ? "Спасибо за оценку!" : "Расскажите, что улучшить?"}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
