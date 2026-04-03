@@ -236,7 +236,7 @@ export default function Index() {
           <div className="max-w-3xl">
             <div className="mb-4 inline-flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 rounded-full border border-foreground/20 bg-foreground/10 px-4 py-1.5 backdrop-blur-md duration-700">
               <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-              <p className="font-mono text-xs text-foreground/90">Новая программа · Сезон 2025</p>
+              <p className="font-mono text-xs text-foreground/90">Новая программа · Сезон 2026</p>
             </div>
             <h1 className="mb-4 animate-in fade-in slide-in-from-bottom-8 font-sans text-5xl font-light leading-[1.1] tracking-tight text-foreground duration-1000 md:text-7xl lg:text-8xl">
               <span className="text-balance">
