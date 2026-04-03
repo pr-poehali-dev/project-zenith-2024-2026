@@ -1,6 +1,6 @@
-import { Shader, ChromaFlow, Swirl } from "shaders/react"
 import { CustomCursor } from "@/components/custom-cursor"
 import { GrainOverlay } from "@/components/grain-overlay"
+import { SpaceBackground } from "@/components/space-background"
 import { HistorySection } from "@/components/sections/work-section"
 import { ProjectsSection } from "@/components/sections/services-section"
 import { CareerSection } from "@/components/sections/about-section"
@@ -53,43 +53,11 @@ function CountdownTimer() {
 export default function Index() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [currentSection, setCurrentSection] = useState(0)
-  const [isLoaded, setIsLoaded] = useState(false)
   const touchStartY = useRef(0)
   const touchStartX = useRef(0)
-  const shaderContainerRef = useRef<HTMLDivElement>(null)
   const scrollThrottleRef = useRef<number>()
 
   const TOTAL_SECTIONS = 6
-
-  useEffect(() => {
-    const checkShaderReady = () => {
-      if (shaderContainerRef.current) {
-        const canvas = shaderContainerRef.current.querySelector("canvas")
-        if (canvas && canvas.width > 0 && canvas.height > 0) {
-          setIsLoaded(true)
-          return true
-        }
-      }
-      return false
-    }
-
-    if (checkShaderReady()) return
-
-    const intervalId = setInterval(() => {
-      if (checkShaderReady()) {
-        clearInterval(intervalId)
-      }
-    }, 100)
-
-    const fallbackTimer = setTimeout(() => {
-      setIsLoaded(true)
-    }, 1500)
-
-    return () => {
-      clearInterval(intervalId)
-      clearTimeout(fallbackTimer)
-    }
-  }, [])
 
   const scrollToSection = (index: number) => {
     if (scrollContainerRef.current) {
@@ -220,47 +188,9 @@ export default function Index() {
     <main className="relative h-screen w-full overflow-hidden bg-background">
       <CustomCursor />
       <GrainOverlay />
+      <SpaceBackground />
 
-      <div
-        ref={shaderContainerRef}
-        className={`fixed inset-0 z-0 transition-opacity duration-700 ${isLoaded ? "opacity-100" : "opacity-0"}`}
-        style={{ contain: "strict" }}
-      >
-        <Shader className="h-full w-full">
-          <Swirl
-            colorA="#0a1628"
-            colorB="#c0392b"
-            speed={0.5}
-            detail={0.7}
-            blend={60}
-            coarseX={35}
-            coarseY={35}
-            mediumX={35}
-            mediumY={35}
-            fineX={35}
-            fineY={35}
-          />
-          <ChromaFlow
-            baseColor="#1a3a6e"
-            upColor="#2563eb"
-            downColor="#c0c8d8"
-            leftColor="#c0392b"
-            rightColor="#7f1d1d"
-            intensity={0.85}
-            radius={1.6}
-            momentum={20}
-            maskType="alpha"
-            opacity={0.96}
-          />
-        </Shader>
-        <div className="absolute inset-0 bg-black/30" />
-      </div>
-
-      <nav
-        className={`fixed left-0 right-0 top-0 z-50 flex items-center justify-between px-6 py-6 transition-opacity duration-700 md:px-12 ${
-          isLoaded ? "opacity-100" : "opacity-0"
-        }`}
-      >
+      <nav className="fixed left-0 right-0 top-0 z-50 flex items-center justify-between px-6 py-6 md:px-12">
         <button
           onClick={() => scrollToSection(0)}
           className="flex items-center gap-2 transition-transform hover:scale-105"
@@ -298,9 +228,7 @@ export default function Index() {
       <div
         ref={scrollContainerRef}
         data-scroll-container
-        className={`relative z-10 flex h-screen overflow-x-auto overflow-y-hidden transition-opacity duration-700 ${
-          isLoaded ? "opacity-100" : "opacity-0"
-        }`}
+        className="relative z-10 flex h-screen overflow-x-auto overflow-y-hidden"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {/* Секция 0: Таймер до старта */}

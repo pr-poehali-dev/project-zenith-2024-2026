@@ -1,67 +1,101 @@
 import { useEffect, useRef } from "react"
 
 export function CustomCursor() {
-  const outerRef = useRef<HTMLDivElement>(null)
-  const innerRef = useRef<HTMLDivElement>(null)
-  const positionRef = useRef({ x: 0, y: 0 })
-  const targetPositionRef = useRef({ x: 0, y: 0 })
-  const isPointerRef = useRef(false)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const posRef = useRef({ x: -200, y: -200 })
+  const targetRef = useRef({ x: -200, y: -200 })
+  const trailRef = useRef<{ x: number; y: number; alpha: number }[]>([])
+  const rafRef = useRef<number>()
 
   useEffect(() => {
-    let animationFrameId: number
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
 
-    const lerp = (start: number, end: number, factor: number) => {
-      return start + (end - start) * factor
+    const resize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
     }
-
-    const updateCursor = () => {
-      positionRef.current.x = lerp(positionRef.current.x, targetPositionRef.current.x, 0.15)
-      positionRef.current.y = lerp(positionRef.current.y, targetPositionRef.current.y, 0.15)
-
-      if (outerRef.current && innerRef.current) {
-        const scale = isPointerRef.current ? 1.5 : 1
-        const innerScale = isPointerRef.current ? 0.5 : 1
-
-        outerRef.current.style.transform = `translate3d(${positionRef.current.x}px, ${positionRef.current.y}px, 0) translate(-50%, -50%) scale(${scale})`
-        innerRef.current.style.transform = `translate3d(${positionRef.current.x}px, ${positionRef.current.y}px, 0) translate(-50%, -50%) scale(${innerScale})`
-      }
-
-      animationFrameId = requestAnimationFrame(updateCursor)
-    }
+    resize()
+    window.addEventListener("resize", resize)
 
     const handleMouseMove = (e: MouseEvent) => {
-      targetPositionRef.current = { x: e.clientX, y: e.clientY }
+      targetRef.current = { x: e.clientX, y: e.clientY }
+    }
+    window.addEventListener("mousemove", handleMouseMove, { passive: true })
 
-      const target = e.target as HTMLElement
-      isPointerRef.current =
-        window.getComputedStyle(target).cursor === "pointer" || target.tagName === "BUTTON" || target.tagName === "A"
+    const TRAIL_LENGTH = 28
+
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      posRef.current.x = lerp(posRef.current.x, targetRef.current.x, 0.18)
+      posRef.current.y = lerp(posRef.current.y, targetRef.current.y, 0.18)
+
+      trailRef.current.unshift({ x: posRef.current.x, y: posRef.current.y, alpha: 1 })
+      if (trailRef.current.length > TRAIL_LENGTH) trailRef.current.pop()
+
+      // Хвост кометы
+      for (let i = trailRef.current.length - 1; i >= 1; i--) {
+        const p = trailRef.current[i]
+        const pPrev = trailRef.current[i - 1]
+        const t = 1 - i / TRAIL_LENGTH
+        const alpha = t * 0.7
+        const width = t * 5
+
+        ctx.beginPath()
+        ctx.moveTo(pPrev.x, pPrev.y)
+        ctx.lineTo(p.x, p.y)
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`
+        ctx.lineWidth = width
+        ctx.lineCap = "round"
+        ctx.lineJoin = "round"
+        ctx.stroke()
+      }
+
+      // Свечение вокруг головы
+      if (trailRef.current.length > 0) {
+        const head = trailRef.current[0]
+
+        const glow = ctx.createRadialGradient(head.x, head.y, 0, head.x, head.y, 14)
+        glow.addColorStop(0, "rgba(180, 220, 255, 0.6)")
+        glow.addColorStop(0.4, "rgba(120, 180, 255, 0.2)")
+        glow.addColorStop(1, "rgba(80, 140, 255, 0)")
+        ctx.beginPath()
+        ctx.arc(head.x, head.y, 14, 0, Math.PI * 2)
+        ctx.fillStyle = glow
+        ctx.fill()
+
+        // Ядро кометы
+        ctx.beginPath()
+        ctx.arc(head.x, head.y, 3.5, 0, Math.PI * 2)
+        ctx.fillStyle = "rgba(255, 255, 255, 1)"
+        ctx.shadowColor = "rgba(180, 220, 255, 0.9)"
+        ctx.shadowBlur = 10
+        ctx.fill()
+        ctx.shadowBlur = 0
+      }
+
+      rafRef.current = requestAnimationFrame(draw)
     }
 
-    window.addEventListener("mousemove", handleMouseMove, { passive: true })
-    animationFrameId = requestAnimationFrame(updateCursor)
+    rafRef.current = requestAnimationFrame(draw)
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove)
-      cancelAnimationFrame(animationFrameId)
+      window.removeEventListener("resize", resize)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
   }, [])
 
   return (
-    <>
-      <div
-        ref={outerRef}
-        className="pointer-events-none fixed left-0 top-0 z-50 mix-blend-difference will-change-transform"
-        style={{ contain: "layout style paint" }}
-      >
-        <div className="h-4 w-4 rounded-full border-2 border-white" />
-      </div>
-      <div
-        ref={innerRef}
-        className="pointer-events-none fixed left-0 top-0 z-50 mix-blend-difference will-change-transform"
-        style={{ contain: "layout style paint" }}
-      >
-        <div className="h-2 w-2 rounded-full bg-white" />
-      </div>
-    </>
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none fixed inset-0 z-[9999]"
+      style={{ mixBlendMode: "screen" }}
+    />
   )
 }
