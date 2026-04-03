@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { MagneticButton } from "@/components/magnetic-button"
 import { useReveal } from "@/hooks/use-reveal"
 import Icon from "@/components/ui/icon"
@@ -27,10 +28,11 @@ const internships = [
 
 export function CareerSection({ scrollToSection }: { scrollToSection?: (index: number) => void }) {
   const { ref, isVisible } = useReveal(0.2)
+  const navigate = useNavigate()
   const [studiedProfs, setStudiedProfs] = useState<number[]>([0])
   const [testDone] = useState(true)
   const [internshipDone] = useState(false)
-  const [quizOpen, setQuizOpen] = useState(false)
+  const [quizOpen] = useState(false)
 
   const checklist = [
     { label: "Профтест пройден", done: testDone },
@@ -172,7 +174,7 @@ export function CareerSection({ scrollToSection }: { scrollToSection?: (index: n
 
         {/* Профтест */}
         <div className={`mt-4 flex flex-wrap items-center gap-3 transition-all duration-700 delay-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <MagneticButton size="lg" variant="primary" onClick={() => setQuizOpen(!quizOpen)}>
+          <MagneticButton size="lg" variant="primary" onClick={() => navigate("/space-quiz")}>
             Кто ты в космосе? — пройти тест
           </MagneticButton>
           <MagneticButton size="lg" variant="secondary" onClick={() => {}}>
@@ -180,12 +182,7 @@ export function CareerSection({ scrollToSection }: { scrollToSection?: (index: n
           </MagneticButton>
         </div>
 
-        {quizOpen && (
-          <div className="mt-4 rounded-xl border border-blue-500/30 bg-blue-500/5 p-4">
-            <p className="font-sans text-sm text-foreground/80">Тест «Кто ты в космосе?» — определи свою роль в освоении Вселенной.</p>
-            <p className="mt-1 font-mono text-xs text-foreground/40">Скоро будет доступен. Следите за обновлениями!</p>
-          </div>
-        )}
+        {quizOpen && null}
       </div>
     </section>
   )
