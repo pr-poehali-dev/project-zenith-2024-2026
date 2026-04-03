@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { useReveal } from "@/hooks/use-reveal"
 import Icon from "@/components/ui/icon"
 
@@ -57,6 +58,7 @@ const projects = [
 
 export function ProjectsSection() {
   const { ref, isVisible } = useReveal(0.2)
+  const navigate = useNavigate()
   const [tab, setTab] = useState<"all" | "mine">("all")
   const [subscribed, setSubscribed] = useState<number[]>([1, 3])
   const [detail, setDetail] = useState<number | null>(null)
@@ -172,9 +174,17 @@ export function ProjectsSection() {
                     <Icon name="Users" size={10} />
                     <span>{p.subscribers.toLocaleString("ru")} подписчиков</span>
                   </div>
-                  {subscribed.includes(p.id) && p.watchDays > 0 && (
+                  {p.id === 5 ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigate("/sfera") }}
+                      className="flex items-center gap-1 font-mono text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <Icon name="ExternalLink" size={10} />
+                      Подробнее
+                    </button>
+                  ) : subscribed.includes(p.id) && p.watchDays > 0 ? (
                     <span className="font-mono text-[10px] text-blue-400">Следите {p.watchDays} дней</span>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>
