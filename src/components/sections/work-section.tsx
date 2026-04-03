@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { useReveal } from "@/hooks/use-reveal"
 import Icon from "@/components/ui/icon"
 
@@ -15,6 +16,7 @@ const events = [
 
 export function HistorySection() {
   const { ref, isVisible } = useReveal(0.2)
+  const navigate = useNavigate()
   const [filter, setFilter] = useState<"all" | "СССР" | "РФ">("all")
   const [search, setSearch] = useState("")
   const [studiedIds, setStudiedIds] = useState<number[]>([2, 3, 7])
@@ -129,12 +131,22 @@ export function HistorySection() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 ml-2">
-                    <button
-                      onClick={() => setOpenId(openId === ev.id ? null : ev.id)}
-                      className="font-mono text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
-                    >
-                      {openId === ev.id ? "Скрыть" : "Изучить"}
-                    </button>
+                    {ev.id === 2 ? (
+                      <button
+                        onClick={() => navigate("/gagarin")}
+                        className="flex items-center gap-1 font-mono text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        <Icon name="ExternalLink" size={10} />
+                        Читать
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setOpenId(openId === ev.id ? null : ev.id)}
+                        className="font-mono text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        {openId === ev.id ? "Скрыть" : "Изучить"}
+                      </button>
+                    )}
                     <button
                       onClick={() => toggleStudied(ev.id)}
                       className={`flex h-5 w-5 items-center justify-center rounded-full border transition-all ${
